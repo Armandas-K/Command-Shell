@@ -1,0 +1,30 @@
+# ---- CMake build folders ----
+/build/
+/build-debug/
+/build-release/
+/cmake-build-debug/
+/cmake-build-release/
+
+# ---- CMake generated files ----
+CMakeCache.txt
+CMakeFiles/
+Makefile
+cmake_install.cmake
+CTestTestfile.cmake
+install_manifest.txt
+
+# ---- Executables and binaries ----
+*.out
+*.o
+*.a
+*.so
+*.exe
+
+# ---- Debug / IDE settings ----
+*.swp
+*.swo
+*.log
+
+# ---- CLion / VSCode ----
+.idea/
+.vscode/
