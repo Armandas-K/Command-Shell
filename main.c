@@ -6,9 +6,12 @@
 // maximum character input per command line
 // 8192 bits = 1024 chars
 #define MAX_INPUT 8192
+// maximum number of args
+#define MAX_TOKENS 128
 
 void shell_loop();
 char *read_line();
+char **parse_line(char *line);
 
 int main() {
     shell_loop();
@@ -28,7 +31,7 @@ void shell_loop() {
         fflush(stdout);
 
         line = read_line();
-        // args = parse_line(line);        tokenise
+        args = parse_line(line);
         // status = execute_command(args); run command
 
         free(line);
@@ -84,4 +87,24 @@ char *read_line() {
             return buffer;
         }
     }
+}
+
+char **parse_line(char *line) {
+    char **tokens = malloc(MAX_TOKENS * sizeof(char *));
+    char *token;
+    int position = 0;
+
+    if (!tokens) {
+        perror("malloc");
+        exit(EXIT_FAILURE);
+    }
+
+    token = strtok(line, " \n");
+    while (token != NULL && position < MAX_TOKENS - 1) {
+        tokens[position++] = token;
+        token = strtok(NULL, " \n");
+    }
+
+    tokens[position] = NULL;
+    return tokens;
 }
