@@ -12,6 +12,7 @@
 void shell_loop();
 char *read_line();
 char **parse_line(char *line);
+int execute_command(char **args);
 
 int main() {
     shell_loop();
@@ -30,9 +31,12 @@ void shell_loop() {
         printf("shell> ");
         fflush(stdout);
 
+        // read
         line = read_line();
+        // tokenise
         args = parse_line(line);
-        // status = execute_command(args); run command
+        // run
+        status = execute_command(args);
 
         free(line);
         free(args);
@@ -95,7 +99,8 @@ char **parse_line(char *line) {
     int position = 0;
 
     if (!tokens) {
-        perror("malloc");
+        fprintf(stderr, "Error: read failed in parse_line(): ");
+        perror(NULL);
         exit(EXIT_FAILURE);
     }
 
@@ -107,4 +112,33 @@ char **parse_line(char *line) {
 
     tokens[position] = NULL;
     return tokens;
+}
+
+// executes built in commands (doesnt fork)
+// return 0 = exit
+int execute_command(char **args) {
+    if (args[0] == NULL) {
+        return 1;  // empty command → continue shell
+    }
+
+    // exit
+    if (strcmp(args[0], "exit") == 0)
+        return 0;
+
+    // cd
+    if (strcmp(args[0], "cd") == 0) {
+        if (args[1] == NULL) {
+            fprintf(stderr, "cd: expected argument\n");
+        } else {
+            // change directory system call
+            if (chdir(args[1]) != 0) {
+                fprintf(stderr, "Error: chdir failed in execute_command(): ");
+                perror(NULL);
+            }
+        }
+        return 1;
+    }
+
+    // todo external commands that need forking
+    return 0;
 }
