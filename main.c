@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <sys/wait.h>
 
 // maximum character input per command line
 // 8192 bits = 1024 chars
@@ -13,6 +14,7 @@ void shell_loop();
 char *read_line();
 char **parse_line(char *line);
 int execute_command(char **args);
+int launch_process(char **args);
 
 int main() {
     shell_loop();
@@ -118,7 +120,7 @@ char **parse_line(char *line) {
 // return 0 = exit
 int execute_command(char **args) {
     if (args[0] == NULL) {
-        return 1;  // empty command → continue shell
+        return 1;
     }
 
     // exit
@@ -139,6 +141,25 @@ int execute_command(char **args) {
         return 1;
     }
 
-    // todo external commands that need forking
-    return 0;
+    return launch_process(args);
+}
+
+int external_command(char **args) {
+    pid_t pid;
+
+    pid = fork();
+    if (pid == 0) {
+        // child process
+        execvp(args[0], args);
+        fprintf(stderr, "Error: execvp failed in external_command(): ");
+        perror(NULL);
+        exit(EXIT_FAILURE);
+    } else if (pid < 0) {
+        perror("fork");
+    } else {
+        // parent waits for child
+        waitpid(pid, NULL, 0);
+    }
+
+    return 1;
 }
