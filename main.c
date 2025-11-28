@@ -14,7 +14,7 @@ void shell_loop();
 char *read_line();
 char **parse_line(char *line);
 int execute_command(char **args);
-int launch_process(char **args);
+int external_command(char **args);
 
 int main() {
     shell_loop();
@@ -141,23 +141,31 @@ int execute_command(char **args) {
         return 1;
     }
 
-    return launch_process(args);
+    return external_command(args);
 }
 
 int external_command(char **args) {
-    pid_t pid;
-
-    pid = fork();
+    pid_t pid = fork();
+    // entry for child
     if (pid == 0) {
-        // child process
-        execvp(args[0], args);
-        fprintf(stderr, "Error: execvp failed in external_command(): ");
+        // append args[0] to /user/bin/(command)
+        char path[1024];
+        snprintf(path, sizeof(path), "/usr/bin/%s", args[0]);
+        // run child process
+        // without searching PATH environment variables
+        execv(path, args);
+        fprintf(stderr, "Error: execv failed in external_command(): ");
         perror(NULL);
         exit(EXIT_FAILURE);
-    } else if (pid < 0) {
-        perror("fork");
-    } else {
-        // parent waits for child
+    }
+    // fork error for parent
+    if (pid < 0) {
+        fprintf(stderr, "Error: fork failed in external_command(): ");
+        perror(NULL);
+        return 0;
+    }
+    // parent waits for child
+    if (pid > 0) {
         waitpid(pid, NULL, 0);
     }
 
