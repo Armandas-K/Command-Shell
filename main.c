@@ -51,9 +51,7 @@ char *read_line() {
 
     // check if malloc succeeds
     if (!buffer) {
-        // print error
-        fprintf(stderr, "Error: malloc failed in read_line(): ");
-        perror(NULL);
+        perror("Error in malloc()");
         exit(EXIT_FAILURE);
     }
 
@@ -73,8 +71,7 @@ char *read_line() {
 
         // read returns error
         if (bytes_read < 0) {
-            fprintf(stderr, "Error: read failed in read_line(): ");
-            perror(NULL);
+            perror("Error in read()");
             exit(EXIT_FAILURE);
         }
 
@@ -101,8 +98,7 @@ char **parse_line(char *line) {
     int position = 0;
 
     if (!tokens) {
-        fprintf(stderr, "Error: read failed in parse_line(): ");
-        perror(NULL);
+        perror("Error in malloc()");
         exit(EXIT_FAILURE);
     }
 
@@ -130,12 +126,11 @@ int execute_command(char **args) {
     // cd
     if (strcmp(args[0], "cd") == 0) {
         if (args[1] == NULL) {
-            fprintf(stderr, "cd: expected argument\n");
+            perror("Error cd: expected argument");
         } else {
             // change directory system call
             if (chdir(args[1]) != 0) {
-                fprintf(stderr, "Error: chdir failed in execute_command(): ");
-                perror(NULL);
+                perror("Error in chdir()");
             }
         }
         return 1;
@@ -154,14 +149,12 @@ int external_command(char **args) {
         // run child process
         // without searching PATH environment variables
         execv(path, args);
-        fprintf(stderr, "Error: execv failed in external_command(): ");
-        perror(NULL);
+        perror("Error in execv()");
         exit(EXIT_FAILURE);
     }
     // fork error for parent
     if (pid < 0) {
-        fprintf(stderr, "Error: fork failed in external_command(): ");
-        perror(NULL);
+        perror("Error in fork()");
         return 0;
     }
     // parent waits for child
