@@ -144,14 +144,10 @@ int external_command(char **args) {
     pid_t pid = fork();
     // entry for child
     if (pid == 0) {
-        // append args[0] to /usr/bin/(command)
-        char path[2048];
-        snprintf(path, sizeof(path), "/usr/bin/%s", args[0]);
-        args[0] = path;
         // run child process
-        // without searching PATH environment variables
-        execv(path, args);
-        perror("Error in execv()");
+        // searches using PATH environment variables
+        execvp(args[0], args);
+        perror("Error in execvp()");
         exit(EXIT_FAILURE);
     }
     // fork error for parent

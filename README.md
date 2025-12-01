@@ -9,7 +9,7 @@ The shell was created to help me learn about Unix process management, system cal
 
 ## Features
 
-- Runs external commands located in `/usr/bin`
+- Runs external commands using system environment variables
 - Supports built-in commands:
     - `cd` — change directory
     - `exit` — quit shell
