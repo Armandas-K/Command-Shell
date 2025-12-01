@@ -11,6 +11,7 @@
 #define MAX_TOKENS 128
 
 void shell_loop();
+void print_prompt();
 char *read_line();
 char **parse_line(char *line);
 int execute_command(char **args);
@@ -30,8 +31,7 @@ void shell_loop() {
     int status = 1;
 
     while (status) {
-        printf("shell> ");
-        fflush(stdout);
+        print_prompt();
 
         // read
         line = read_line();
@@ -43,6 +43,19 @@ void shell_loop() {
         free(line);
         free(args);
     }
+}
+
+void print_prompt() {
+    char cwd[1024];
+
+    if (getcwd(cwd, sizeof(cwd)) != NULL) {
+        printf("%s> ", cwd);
+    } else {
+        perror("getcwd");
+        printf("?> ");
+    }
+
+    fflush(stdout);
 }
 
 char *read_line() {
