@@ -120,8 +120,9 @@ int execute_command(char **args) {
     }
 
     // exit
-    if (strcmp(args[0], "exit") == 0)
+    if (strcmp(args[0], "exit") == 0) {
         return 0;
+    }
 
     // cd
     if (strcmp(args[0], "cd") == 0) {
