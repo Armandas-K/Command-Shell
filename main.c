@@ -5,8 +5,8 @@
 #include <sys/wait.h>
 
 // maximum character input per command line
-// 8192 bits = 1024 chars
-#define MAX_INPUT 8192
+// 2048 bytes
+#define MAX_INPUT 2048
 // maximum number of args
 #define MAX_TOKENS 128
 
@@ -126,7 +126,7 @@ int execute_command(char **args) {
     // cd
     if (strcmp(args[0], "cd") == 0) {
         if (args[1] == NULL) {
-            perror("Error cd: expected argument");
+            fprintf(stderr, "Error in cd: missing argument\n");
         } else {
             // change directory system call
             if (chdir(args[1]) != 0) {
@@ -143,9 +143,10 @@ int external_command(char **args) {
     pid_t pid = fork();
     // entry for child
     if (pid == 0) {
-        // append args[0] to /user/bin/(command)
-        char path[1024];
+        // append args[0] to /usr/bin/(command)
+        char path[2048];
         snprintf(path, sizeof(path), "/usr/bin/%s", args[0]);
+        args[0] = path;
         // run child process
         // without searching PATH environment variables
         execv(path, args);
