@@ -42,7 +42,7 @@ void print_prompt() {
     if (getcwd(cwd, sizeof(cwd)) != NULL) {
         printf("%s> ", cwd);
     } else {
-        perror("getcwd");
+        perror("Error in getcwd()");
         printf("?> ");
     }
 
@@ -62,6 +62,11 @@ char *read_line() {
     while (1) {
         char c;
         ssize_t bytes_read = read(0, &c, 1);
+
+        if (bytes_read == 0) {
+            printf("\n");
+            exit(0);
+        }
 
         if (bytes_read < 0) {
             perror("Error in read()");
