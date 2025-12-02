@@ -16,6 +16,7 @@ char *read_line();
 char **parse_line(char *line);
 int execute_command(char **args);
 int external_command(char **args);
+int execute_pipe(char **args);
 
 int main() {
     shell_loop();
@@ -51,7 +52,7 @@ void print_prompt() {
     if (getcwd(cwd, sizeof(cwd)) != NULL) {
         printf("%s> ", cwd);
     } else {
-        perror("getcwd");
+        perror("Error in getcwd()");
         printf("?> ");
     }
 
@@ -150,6 +151,13 @@ int execute_command(char **args) {
         return 1;
     }
 
+    // pipe
+    for (int i = 0; args[i] != NULL; i++) {
+        if (strcmp(args[i], "|") == 0) {
+            return execute_pipe(args);
+        }
+    }
+
     return external_command(args);
 }
 
@@ -172,6 +180,76 @@ int external_command(char **args) {
     if (pid > 0) {
         waitpid(pid, NULL, 0);
     }
+
+    return 1;
+}
+
+// handle a single pipe: cmd1 | cmd2
+int execute_pipe(char **args) {
+    int pipe_pos = -1;
+
+    // find |
+    for (int i = 0; args[i] != NULL; i++) {
+        if (strcmp(args[i], "|") == 0) {
+            pipe_pos = i;
+            break;
+        }
+    }
+
+    // shouldnt occur
+    if (pipe_pos == -1) {
+        fprintf(stderr, "Pipe error: '|' not found\n");
+        return 1;
+    }
+
+    // split command into two arrays
+    args[pipe_pos] = NULL;       // terminate left command
+    char **left_cmd = args;
+    char **right_cmd = &args[pipe_pos + 1];
+
+    int fd[2];
+    if (pipe(fd) < 0) {
+        perror("pipe");
+        return 1;
+    }
+
+    // fork child 1 (left cmd)
+    pid_t pid1 = fork();
+    if (pid1 == 0) {
+        // close read end
+        close(fd[0]);
+        // write to stdout
+        dup2(fd[1], STDOUT_FILENO);
+        close(fd[1]);
+
+        // run first program
+        execvp(left_cmd[0], left_cmd);
+        perror("execvp");
+        exit(EXIT_FAILURE);
+    }
+
+    // fork child 2 (right cmd)
+    pid_t pid2 = fork();
+    if (pid2 == 0) {
+        // close write end
+        close(fd[1]);
+        // read from stdin
+        dup2(fd[0], STDIN_FILENO);
+        close(fd[0]);
+
+        // run second program
+        execvp(right_cmd[0], right_cmd);
+        perror("execvp");
+        exit(EXIT_FAILURE);
+    }
+
+    // parent closes both ends of pipe
+    close(fd[0]);
+    close(fd[1]);
+
+    // wait for both children
+    waitpid(pid1, NULL, 0);
+    waitpid(pid2, NULL, 0);
 
     return 1;
 }
