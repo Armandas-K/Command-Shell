@@ -141,9 +141,12 @@ int execute_command(char **args) {
     // cd
     if (strcmp(args[0], "cd") == 0) {
         if (args[1] == NULL) {
-            fprintf(stderr, "Error in cd: missing argument\n");
+            // no argument: go to root directory
+            if (chdir("/") != 0) {
+                perror("Error in chdir()");
+            }
         } else {
-            // change directory system call
+            // change to specified directory
             if (chdir(args[1]) != 0) {
                 perror("Error in chdir()");
             }
