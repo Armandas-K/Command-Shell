@@ -1,21 +1,19 @@
 # Simple Unix Shell
 
 This project is a minimal command-line shell in C  
-It supports running basic Unix commands using system calls such as `fork()`, `execv()`, `waitpid()`, `read()`, and `chdir()`.
+It supports running basic Unix commands using POSIX system calls such as `fork()`, `execvp()`, `waitpid()`, `read()`, `chdir()`, `pipe()` and `dup2()`
 
-The shell was created to help me learn about Unix process management, system calls, and basic command parsing.
+The shell was created to help me learn about Unix processes, system calls, basic command parsing and inter-process communication
 
 ---
 
 ## Features
 
-- Runs external commands using system environment variables
 - Supports built-in commands:
-    - `cd` — change directory
-    - `exit` — quit shell
-- Reads input using the `read()` system call
-- Tokenises commands using `strtok()`
-- Executes commands using `fork()` + `execv()`
+  - `cd` — change directory
+  - `exit` — quit shell
+- Runs Unix commands by creating child processes
+- Supports simple two-command pipelines
 
 ---
 
